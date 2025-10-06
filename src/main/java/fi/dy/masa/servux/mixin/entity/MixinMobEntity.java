@@ -1,8 +1,11 @@
 package fi.dy.masa.servux.mixin.entity;
 
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.mob.MobEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.world.GameRules;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -32,10 +35,10 @@ public abstract class MixinMobEntity
 		}
 	}
 
-	@Redirect(method = "tickMovement",
+	@WrapOperation(method = "tickMovement",
 	          at = @At(value = "INVOKE",
-	                   target = "Lnet/minecraft/world/GameRules;getBoolean(Lnet/minecraft/world/GameRules$Key;)Z"))
-	private boolean servux$fixAllayGathering4(GameRules instance, GameRules.Key<GameRules.BooleanRule> rule)
+	                   target = "Lnet/neoforged/neoforge/event/EventHooks;canEntityGrief(Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/entity/Entity;)Z"))
+	private boolean servux$fixAllayGathering4(ServerWorld serverWorld, Entity entity, Operation<Boolean> original)
 	{
 		if (EntitiesDataProvider.INSTANCE.hasFixAllayGathering() &&
 			this.isAllay)
@@ -44,6 +47,6 @@ public abstract class MixinMobEntity
 		}
 
 		this.isAllay = false;
-		return instance.getBoolean(GameRules.DO_MOB_GRIEFING);
+		return original.call(serverWorld, entity);
 	}
 }
