@@ -222,7 +222,7 @@ public interface IPluginServerPlayHandler<T extends CustomPayload> extends Serve
 
             if (handler.accepts(packet))
             {
-                handler.sendPacket(packet);
+                handler.send(packet);
                 return true;
             }
         }

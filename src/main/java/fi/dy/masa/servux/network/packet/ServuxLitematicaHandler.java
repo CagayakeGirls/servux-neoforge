@@ -4,8 +4,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import io.netty.buffer.Unpooled;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtSizeTracker;
@@ -24,7 +24,7 @@ import fi.dy.masa.servux.network.IPluginServerPlayHandler;
 import fi.dy.masa.servux.network.IServerPayloadData;
 import fi.dy.masa.servux.network.PacketSplitter;
 
-@Environment(EnvType.SERVER)
+@OnlyIn(Dist.DEDICATED_SERVER)
 public abstract class ServuxLitematicaHandler<T extends CustomPayload> implements IPluginServerPlayHandler<T>
 {
     private static final ServuxLitematicaHandler<ServuxLitematicaPacket.Payload> INSTANCE = new ServuxLitematicaHandler<>() {
