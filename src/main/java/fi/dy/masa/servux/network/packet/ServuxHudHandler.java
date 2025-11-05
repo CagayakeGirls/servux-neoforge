@@ -10,8 +10,8 @@ import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 
 import fi.dy.masa.servux.Reference;
@@ -21,7 +21,7 @@ import fi.dy.masa.servux.network.IPluginServerPlayHandler;
 import fi.dy.masa.servux.network.IServerPayloadData;
 import fi.dy.masa.servux.network.PacketSplitter;
 
-@Environment(EnvType.SERVER)
+@OnlyIn(Dist.DEDICATED_SERVER)
 public abstract class ServuxHudHandler<T extends CustomPayload> implements IPluginServerPlayHandler<T>
 {
     private static final ServuxHudHandler<ServuxHudPacket.Payload> INSTANCE = new ServuxHudHandler<>() {
