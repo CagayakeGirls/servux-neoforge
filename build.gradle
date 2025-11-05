@@ -1,7 +1,7 @@
 plugins {
     id 'team.cagayakegirls.scripts'
     id 'dev.architectury.loom'
-    //id 'com.hypherionmc.modutils.modpublisher' version '2.1.8'
+    id 'com.hypherionmc.modutils.modpublisher' version '2.+'
     id 'maven-publish'
 
 }
@@ -135,7 +135,6 @@ publishing {
     }
 }
 
-/*
 publisher {
     apiKeys {
         modrinth System.getenv("MODRINTH_TOKEN")
@@ -154,5 +153,3 @@ publisher {
     setArtifact(remapJar)
     addAdditionalFile(sourcesJar)
 }
-
- */
