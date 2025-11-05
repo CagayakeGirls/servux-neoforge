@@ -57,5 +57,5 @@ dependencies {
 - The built jar file will be in build/libs/
 
 ## Credits
-- [maruohon/malilib](https://github.com/maruohon/servux)
-- [sakura-ryoko/malilib](https://github.com/sakura-ryoko/servux)
+- [maruohon/servux](https://github.com/maruohon/servux)
+- [sakura-ryoko/servux](https://github.com/sakura-ryoko/servux)
