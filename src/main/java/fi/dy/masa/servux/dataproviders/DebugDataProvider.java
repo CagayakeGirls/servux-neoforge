@@ -258,7 +258,7 @@ public class DebugDataProvider extends DataProviderBase
                 if (this.registeredPlayers.containsKey(player.getUuid()) &&
                         player.networkHandler.accepts(packet))
                 {
-                    player.networkHandler.sendPacket(packet);
+                    player.networkHandler.send(packet);
                 }
             }
         }
