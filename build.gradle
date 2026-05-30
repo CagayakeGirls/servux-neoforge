@@ -33,8 +33,6 @@ dependencies {
 	include(api("team.cagayakegirls.foxified:foxified-networking-api:${project.networking_api_version}"))
 	runtimeOnly("team.cagayakegirls.foxified:foxified-classtweaker:${project.foxified_classtweaker_version}")
 
-	// Lucko Permissions API
-	implementation include("me.lucko:fabric-permissions-api:${project.fabric_permissions_api_version}")
 //	runtimeOnly 'me.fallenbreath:mixin-auditor:0.2.0-u'
 }
 
