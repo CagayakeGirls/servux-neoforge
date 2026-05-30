@@ -6,8 +6,8 @@ import java.util.UUID;
 import io.netty.buffer.Unpooled;
 import org.jetbrains.annotations.NotNull;
 
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
+//import net.fabricmc.api.EnvType;
+//import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
@@ -21,7 +21,7 @@ import fi.dy.masa.servux.network.IPluginServerPlayHandler;
 import fi.dy.masa.servux.network.IServerPayloadData;
 import fi.dy.masa.servux.network.PacketSplitter;
 
-@Environment(EnvType.SERVER)
+//@Environment(EnvType.SERVER)
 public abstract class ServuxHudHandler<T extends CustomPacketPayload> implements IPluginServerPlayHandler<T>
 {
     private static final ServuxHudHandler<ServuxHudPacket.Payload> INSTANCE = new ServuxHudHandler<>()
