@@ -7,8 +7,8 @@ import io.netty.buffer.Unpooled;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
+//import net.fabricmc.api.EnvType;
+//import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtAccounter;
@@ -27,7 +27,7 @@ import fi.dy.masa.servux.network.IServerPayloadData;
 import fi.dy.masa.servux.network.PacketSplitter;
 import fi.dy.masa.servux.schematic.LitematicaSchematic;
 
-@Environment(EnvType.SERVER)
+//@Environment(EnvType.SERVER)
 public abstract class ServuxLitematicaHandler<T extends CustomPacketPayload> implements IPluginServerPlayHandler<T>
 {
     private static final ServuxLitematicaHandler<ServuxLitematicaPacket.Payload> INSTANCE = new ServuxLitematicaHandler<>()
