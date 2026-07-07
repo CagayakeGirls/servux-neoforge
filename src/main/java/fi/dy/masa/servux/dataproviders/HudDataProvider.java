@@ -63,6 +63,7 @@ public class HudDataProvider extends DataProviderBase
     private long lastWeatherTick;
     private boolean refreshSpawnMetadata;
     private boolean refreshWeatherData;
+    private final List<UUID> registeredPlayers = new ArrayList<>();
     private final List<UUID> invalidPlayers = new ArrayList<>();
 
     private final HashMap<UUID, List<DataLogger>> loggerPlayers = new HashMap<>();
@@ -155,7 +156,7 @@ public class HudDataProvider extends DataProviderBase
     @Override
     public boolean isPlayerRegistered(ServerPlayerEntity player)
     {
-        return !this.isPlayerInvalid(player);
+        return this.registeredPlayers.contains(player.getUuid()) && !this.isPlayerInvalid(player);
     }
 
     @Override
@@ -411,7 +412,7 @@ public class HudDataProvider extends DataProviderBase
         }
     }
 
-    public void sendMetadata(ServerPlayerEntity player)
+    public void register(ServerPlayerEntity player)
     {
         if (!this.isEnabled()) return;
 
@@ -434,6 +435,8 @@ public class HudDataProvider extends DataProviderBase
 
         Servux.debugLog("hudDataChannel: sendMetadata to player {}", player.getName().getLiteralString());
 
+        this.registeredPlayers.add(player.getUuid());
+
         // Sends Metadata handshake, it doesn't succeed the first time, so using networkHandler
         if (player.networkHandler != null)
         {
@@ -447,6 +450,10 @@ public class HudDataProvider extends DataProviderBase
 
     public void refreshLoggers(ServerPlayerEntity player, @Nonnull NbtCompound nbt)
     {
+        if (!this.isPlayerRegistered(player) || !this.isEnabled())
+        {
+            return;
+        }
         if (!this.hasPermissionsForLoggers(player))
         {
             player.sendMessage(StringUtils.translate("servux.hud_data.error.insufficient_for_loggers", "any"));
@@ -495,12 +502,14 @@ public class HudDataProvider extends DataProviderBase
     {
         this.setPlayerInvalid(player);
         this.removePlayerLoggers(player);
+        this.registeredPlayers.remove(player.getUuid());
     }
 
     public void removePlayer(ServerPlayerEntity player)
     {
         this.removeInvalidPlayer(player);
         this.removePlayerLoggers(player);
+        this.registeredPlayers.remove(player.getUuid());
     }
 
     private void removePlayerLoggers(ServerPlayerEntity player)
@@ -510,9 +519,12 @@ public class HudDataProvider extends DataProviderBase
 
     public void refreshSpawnMetadata(ServerPlayerEntity player, @Nullable NbtCompound data)
     {
-        if (!this.isEnabled()) return;
+        if (!this.isPlayerRegistered(player) || !this.isEnabled())
+        {
+            return;
+        }
 
-	    GlobalPos spawnPos = HudDataProvider.INSTANCE.getSpawnPos();
+        GlobalPos spawnPos = this.getSpawnPos();
         NbtCompound nbt = new NbtCompound();
 
         nbt.putString("id", getNetworkChannel().toString());
@@ -522,12 +534,12 @@ public class HudDataProvider extends DataProviderBase
         nbt.putInt("spawnPosX", spawnPos.pos().getX());
         nbt.putInt("spawnPosY", spawnPos.pos().getY());
         nbt.putInt("spawnPosZ", spawnPos.pos().getZ());
-//        nbt.putInt("spawnChunkRadius", HudDataProvider.INSTANCE.getSpawnChunkRadius());
+//        nbt.putInt("spawnChunkRadius", this.getSpawnChunkRadius());
 
         if (this.shareSeed.getValue() && this.hasPermissionsForSeed(player))
         {
             Servux.debugLog("refreshSpawnMetadata() player [{}] has seedPermissions.", player.getName().getLiteralString());
-            nbt.putLong("worldSeed", this.worldSeed);
+            nbt.putLong("worldSeed", this.getWorldSeed());
         }
         else
         {
@@ -539,7 +551,7 @@ public class HudDataProvider extends DataProviderBase
 
     public void refreshWeatherData(ServerPlayerEntity player, @Nullable NbtCompound data)
     {
-        if (!this.hasPermissionsForWeather(player) || !this.isEnabled())
+        if (!this.hasPermissionsForWeather(player) || !this.isPlayerRegistered(player) || !this.isEnabled())
         {
             return;
         }
@@ -579,7 +591,7 @@ public class HudDataProvider extends DataProviderBase
 
     public void refreshRecipeManager(ServerPlayerEntity player, @Nullable NbtCompound data)
     {
-        if (!this.hasPermission(player))
+        if (!this.hasPermission(player) || !this.isPlayerRegistered(player) || !this.isEnabled())
         {
             return;
         }
@@ -618,7 +630,7 @@ public class HudDataProvider extends DataProviderBase
     {
         if (this.spawnPos == null)
         {
-            this.setSpawnPos(new GlobalPos(ServerWorld.OVERWORLD, BlockPos.ORIGIN));
+            this.spawnPos = new GlobalPos(ServerWorld.OVERWORLD, BlockPos.ORIGIN);
         }
 
         return this.spawnPos;
@@ -654,6 +666,11 @@ public class HudDataProvider extends DataProviderBase
         }
 
         this.spawnPos = spawnPos;
+
+        if (this.spawnPos.equals(new GlobalPos(ServerWorld.OVERWORLD, BlockPos.ORIGIN)))
+        {
+            Servux.LOGGER.warn("setSpawnPos(): Warning! Spawn pos was set to [{}]; please verify that this was intended", this.getSpawnPosAsString());
+        }
     }
 
 //    public int getSpawnChunkRadius()
