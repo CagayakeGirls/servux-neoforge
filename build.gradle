@@ -40,7 +40,9 @@ base {
 	}
 }
 
-//loom {
+loom {
+	accessWidenerPath = file("src/main/resources/servux.accesswidener")
+
 //	def commonVmArgs = ['-Dmixin.debug.export=true', '-Dmixin.debug.countInjections=true']
 //	// [FEATURE] MIXIN_AUDITOR
 //	runs {
@@ -51,7 +53,7 @@ base {
 //			ideConfigGenerated false
 //		}
 //	}
-//}
+}
 
 var generateModMetadata = tasks.register("generateModMetadata", ProcessResources) {
     var replaceProperties = [

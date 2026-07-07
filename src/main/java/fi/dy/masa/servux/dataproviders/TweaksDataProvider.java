@@ -15,6 +15,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtList;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
@@ -34,20 +35,24 @@ import net.minecraft.util.profiler.Profiler;
 public class TweaksDataProvider extends DataProviderBase
 {
     public static final TweaksDataProvider INSTANCE = new TweaksDataProvider();
-    protected final static ServuxTweaksHandler<ServuxTweaksPacket.Payload> HANDLER = ServuxTweaksHandler.getInstance();
-    protected final NbtCompound metadata = new NbtCompound();
+	private final static ServuxTweaksHandler<ServuxTweaksPacket.Payload> HANDLER = ServuxTweaksHandler.getInstance();
+    private final NbtCompound metadata = new NbtCompound();
     private final BoolCallbacks boolCallback = new BoolCallbacks();
     private final IntCallbacks intCallback = new IntCallbacks();
-    protected ServuxIntSetting permissionLevel = new ServuxIntSetting(this, "permission_level", 0, 4, 0, this.intCallback);
-    protected ServuxIntSetting updateInterval = new ServuxIntSetting(this, "update_interval", 120, 1200, 40, this.intCallback);
-    protected ServuxBoolSetting stackableShulkers = new ServuxBoolSetting(this, "stackable_shulkers", false, this.boolCallback);
-    protected ServuxIntSetting stackableShulkersSize = new ServuxIntSetting(this, "stackable_shulkers_count", 64, 99, 1, this.intCallback);
-    protected ServuxBoolSetting stackableShulkersFix = new ServuxBoolSetting(this, "stackable_shulkers_fix", true, this.boolCallback);
-    protected List<IServuxSetting<?>> settings = List.of(
-            this.permissionLevel, this.updateInterval,
-            this.stackableShulkers, this.stackableShulkersSize, this.stackableShulkersFix
+	private final ServuxIntSetting permissionLevel = new ServuxIntSetting(this, "permission_level", 0, 4, 0, this.intCallback);
+	private final ServuxIntSetting updateInterval = new ServuxIntSetting(this, "update_interval", 120, 1200, 40, this.intCallback);
+	private final ServuxBoolSetting stackableShulkers = new ServuxBoolSetting(this, "stackable_shulkers", false, this.boolCallback);
+	private final ServuxIntSetting stackableShulkersSize = new ServuxIntSetting(this, "stackable_shulkers_count", 64, 99, 1, this.intCallback);
+	private final ServuxBoolSetting stackableShulkersFix = new ServuxBoolSetting(this, "stackable_shulkers_fix", true, this.boolCallback);
+	private final List<IServuxSetting<?>> settings = List.of(
+            this.permissionLevel,
+            this.updateInterval,
+            this.stackableShulkers,
+            this.stackableShulkersSize,
+            this.stackableShulkersFix
     );
 
+    private final List<UUID> registeredPlayers = new ArrayList<>();
     private final List<UUID> invalidPlayers = new ArrayList<>();
     private boolean configDirty = false;
 
@@ -78,11 +83,13 @@ public class TweaksDataProvider extends DataProviderBase
     public void registerHandler()
     {
         ServerPlayHandler.getInstance().registerServerPlayHandler(HANDLER);
-        if (this.isRegistered() == false)
+
+        if (!this.isRegistered())
         {
             HANDLER.registerPlayPayload(ServuxTweaksPacket.Payload.ID, ServuxTweaksPacket.Payload.CODEC, IPluginServerPlayHandler.BOTH_SERVER);
             this.setRegistered(true);
         }
+
         HANDLER.registerPlayReceiver(ServuxTweaksPacket.Payload.ID, HANDLER::receivePlayPayload);
     }
 
@@ -127,7 +134,7 @@ public class TweaksDataProvider extends DataProviderBase
     @Override
     public boolean isPlayerRegistered(ServerPlayerEntity player)
     {
-        return !this.isPlayerInvalid(player);
+        return this.registeredPlayers.contains(player.getUuid()) && !this.isPlayerInvalid(player);
     }
 
     private void checkTweaksMetadata()
@@ -164,16 +171,16 @@ public class TweaksDataProvider extends DataProviderBase
         {
             if (this.isPlayerRegistered(player))
             {
-                this.sendMetadata(player);
+                this.register(player);
             }
         }
     }
 
-    public void sendMetadata(ServerPlayerEntity player)
+    public void register(ServerPlayerEntity player)
     {
         if (!this.isEnabled()) return;
 
-        if (this.hasPermission(player) == false)
+        if (!this.hasPermission(player))
         {
             // No Permission
             Servux.debugLog("tweaks_service: Denying access for player {}, Insufficient Permissions", player.getName().getLiteralString());
@@ -182,6 +189,8 @@ public class TweaksDataProvider extends DataProviderBase
 
         Servux.debugLog("tweaksDataChannel: sendMetadata to player {}", player.getName().getLiteralString());
         this.checkTweaksMetadata();
+
+        this.registeredPlayers.add(player.getUuid());
 
         // Sends Metadata handshake, it doesn't succeed the first time, so using networkHandler
         if (player.networkHandler != null)
@@ -197,11 +206,13 @@ public class TweaksDataProvider extends DataProviderBase
     public void onPacketFailure(ServerPlayerEntity player)
     {
         this.setPlayerInvalid(player);
+        this.registeredPlayers.remove(player.getUuid());
     }
 
     public void removePlayer(ServerPlayerEntity player)
     {
         this.removeInvalidPlayer(player);
+        this.registeredPlayers.remove(player.getUuid());
     }
 
     private void setPlayerInvalid(ServerPlayerEntity player)
@@ -224,7 +235,7 @@ public class TweaksDataProvider extends DataProviderBase
 
     public void onBlockEntityRequest(ServerPlayerEntity player, BlockPos pos)
     {
-        if (this.hasPermission(player) == false || !this.isEnabled())
+        if (!this.hasPermission(player) || !this.isPlayerRegistered(player) || !this.isEnabled())
         {
             return;
         }
@@ -238,7 +249,7 @@ public class TweaksDataProvider extends DataProviderBase
 
     public void onEntityRequest(ServerPlayerEntity player, int entityId)
     {
-        if (this.hasPermission(player) == false)
+        if (!this.hasPermission(player) || !this.isPlayerRegistered(player) || !this.isEnabled())
         {
             return;
         }
@@ -256,7 +267,21 @@ public class TweaksDataProvider extends DataProviderBase
 
             if (nbt != null && id != null)
             {
-                nbt.putString("id", id.toString());
+	            if (entity.getType() == EntityType.PLAYER)
+	            {
+		            if (!EntitiesDataProvider.INSTANCE.hasPlayerInventoryPermission(player))
+		            {
+			            nbt.remove("Inventory");
+			            nbt.put("Inventory", new NbtList());
+		            }
+		            if (!EntitiesDataProvider.INSTANCE.hasPlayerEnderItemsPermission(player))
+		            {
+			            nbt.remove("EnderItems");
+			            nbt.put("EnderItems", new NbtList());
+		            }
+	            }
+
+	            nbt.putString("id", id.toString());
                 HANDLER.encodeServerData(player, ServuxTweaksPacket.SimpleEntityResponse(entityId, nbt.copy()));
             }
         }
@@ -314,7 +339,7 @@ public class TweaksDataProvider extends DataProviderBase
         return stack.getComponents().getOrDefault(DataComponentTypes.MAX_STACK_SIZE, 1);
     }
 
-    @Override
+	@Override
     public boolean hasPermission(ServerPlayerEntity player)
     {
         return Permissions.check(player, this.permNode, this.permissionLevel.getValue());
