@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import io.netty.buffer.Unpooled;
+import org.apache.commons.lang3.tuple.Pair;
+
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
@@ -23,6 +25,7 @@ import fi.dy.masa.servux.dataproviders.LitematicsDataProvider;
 import fi.dy.masa.servux.network.IPluginServerPlayHandler;
 import fi.dy.masa.servux.network.IServerPayloadData;
 import fi.dy.masa.servux.network.PacketSplitter;
+import fi.dy.masa.servux.schematic.LitematicaSchematic;
 
 @OnlyIn(Dist.DEDICATED_SERVER)
 public abstract class ServuxLitematicaHandler<T extends CustomPayload> implements IPluginServerPlayHandler<T>
@@ -77,12 +80,13 @@ public abstract class ServuxLitematicaHandler<T extends CustomPayload> implement
         }
         switch (packet.getType())
         {
-            case PACKET_C2S_METADATA_REQUEST -> LitematicsDataProvider.INSTANCE.sendMetadata(player);
+            case PACKET_C2S_METADATA_REQUEST -> LitematicsDataProvider.INSTANCE.registerPlayer(player);
             case PACKET_C2S_BLOCK_ENTITY_REQUEST -> LitematicsDataProvider.INSTANCE.onBlockEntityRequest(player, packet.getPos());
             case PACKET_C2S_ENTITY_REQUEST -> LitematicsDataProvider.INSTANCE.onEntityRequest(player, packet.getEntityId());
             case PACKET_C2S_BULK_ENTITY_NBT_REQUEST -> LitematicsDataProvider.INSTANCE.onBulkEntityRequest(player, packet.getChunkPos(), packet.getCompound());
             case PACKET_C2S_NBT_RESPONSE_DATA ->
             {
+                if (!LitematicsDataProvider.INSTANCE.isPlayerRegistered(player)) { return; }
                 UUID uuid = player.getUuid();
                 long readingSessionKey;
 
@@ -112,7 +116,7 @@ public abstract class ServuxLitematicaHandler<T extends CustomPayload> implement
                     try
                     {
                         this.readingSessionKeys.remove(uuid);
-                        LitematicsDataProvider.INSTANCE.handleClientPasteRequest(player, fullPacket.readVarInt(), (NbtCompound) fullPacket.readNbt(NbtSizeTracker.ofUnlimitedBytes()));
+                        this.handleBulkData(player, fullPacket.readVarInt(), (NbtCompound) fullPacket.readNbt(NbtSizeTracker.ofUnlimitedBytes()));
                     }
                     catch (Exception e)
                     {
@@ -122,6 +126,31 @@ public abstract class ServuxLitematicaHandler<T extends CustomPayload> implement
             }
             default -> Servux.LOGGER.warn("ServuxLitematicaHandler#decodeServerData(): Invalid packetType '{}' from player: {}, of size in bytes: {}.", packet.getPacketType(), player.getName().getLiteralString(), packet.getTotalSize());
         }
+    }
+
+    private void handleBulkData(ServerPlayerEntity player, final int type, NbtCompound nbt)
+    {
+        String task = nbt.getString("Task");
+        Servux.debugLog("handleBulkData: received task: {} from {}", task, player.getName().getString());
+
+        // For future Granular Task Management
+//        switch (task)
+//        {
+//            // File-Transmit support
+//            case "Litematic-TransmitStart", "Litematic-TransmitCancel", "Litematic-TransmitData", "Litematic-TransmitEnd" ->
+//            {
+//                Pair<LitematicaSchematic, CompoundTag> schemPair = LitematicaSchematic.receiveFileTransmit(nbt, player);
+//
+//                if (schemPair != null && schemPair.getLeft().getFile() != null)
+//                {
+//                    Servux.debugLog("handleBulkData(): Received litematic '{}' from player {}", schemPair.getLeft().getFile().toAbsolutePath().toString(), player.getName().tryCollapseToString());
+//                    LitematicsDataProvider.INSTANCE.handleClientPasteRequestPair(player, type, schemPair);
+//                }
+//            }
+//            default -> LitematicsDataProvider.INSTANCE.handleClientPasteRequest(player, type, nbt);
+//        }
+
+        LitematicsDataProvider.INSTANCE.handleClientPasteRequest(player, type, nbt);
     }
 
     @Override

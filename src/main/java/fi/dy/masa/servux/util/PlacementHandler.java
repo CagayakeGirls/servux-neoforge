@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import net.minecraft.block.*;
 import net.minecraft.block.enums.BlockHalf;
@@ -23,6 +24,7 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import fi.dy.masa.servux.Servux;
+import fi.dy.masa.servux.dataproviders.ServuxConfigProvider;
 
 public class PlacementHandler
 {
@@ -53,9 +55,9 @@ public class PlacementHandler
     /**
      * BlackList for Block States.  Entries here will be reset to their default value.
      */
-    public static final ImmutableSet<Property<?>> BLACKLISTED_PROPERTIES = ImmutableSet.of(
-            Properties.WATERLOGGED,
-            Properties.POWERED
+    public static final ImmutableMap<Property<?>, ? extends Comparable<?>> BLACKLISTED_PROPERTIES = ImmutableMap.of(
+            Properties.WATERLOGGED,       Boolean.FALSE,
+            Properties.POWERED,           Boolean.FALSE
     );
 
     public static <T extends Comparable<T>> BlockState applyPlacementProtocolV3(BlockState state, UseContext context)
@@ -83,15 +85,22 @@ public class PlacementHandler
                 return null;
             }
 
-            if (state.canPlaceAt(context.getWorld(), context.getPos()))
+            if (ServuxConfigProvider.INSTANCE.isEasyPlaceValidatorEnabled())
             {
-                //System.out.printf("validator passed for \"%s\"\n", property.getName());
-                oldState = state;
+                if (state.canPlaceAt(context.getWorld(), context.getPos()))
+                {
+                    //System.out.printf("validator passed for \"%s\"\n", property.getName());
+                    oldState = state;
+                }
+                else
+                {
+                    //System.out.printf("validator failed for \"%s\"\n", property.getName());
+                    state = oldState;
+                }
             }
             else
             {
-                //System.out.printf("validator failed for \"%s\"\n", property.getName());
-                state = oldState;
+                oldState = state;
             }
 
             // Consume the bits used for the facing
@@ -123,7 +132,7 @@ public class PlacementHandler
                     continue;
                 }
                 else if (WHITELISTED_PROPERTIES.contains(p) &&
-                        !BLACKLISTED_PROPERTIES.contains(p))
+                        !BLACKLISTED_PROPERTIES.containsKey(p))
                 {
                     @SuppressWarnings("unchecked")
                     Property<T> prop = (Property<T>) p;
@@ -145,15 +154,22 @@ public class PlacementHandler
                             //System.out.printf("applying \"%s\": %s\n", prop.getName(), value);
                             state = state.with(prop, value);
 
-                            if (state.canPlaceAt(context.getWorld(), context.getPos()))
+                            if (ServuxConfigProvider.INSTANCE.isEasyPlaceValidatorEnabled())
                             {
-                                //System.out.printf("validator passed for \"%s\"\n", prop.getName());
-                                oldState = state;
+                                if (state.canPlaceAt(context.getWorld(), context.getPos()))
+                                {
+                                    //System.out.printf("validator passed for \"%s\"\n", prop.getName());
+                                    oldState = state;
+                                }
+                                else
+                                {
+                                    //System.out.printf("validator failed for \"%s\"\n", prop.getName());
+                                    state = oldState;
+                                }
                             }
                             else
                             {
-                                //System.out.printf("validator failed for \"%s\"\n", prop.getName());
-                                state = oldState;
+                                oldState = state;
                             }
                         }
 
@@ -169,14 +185,14 @@ public class PlacementHandler
 
         // Strip Blacklisted properties, and use the Block's default state.
         // This needs to be done after the initial loop, or it breaks compatibility
-        for (Property<?> p : BLACKLISTED_PROPERTIES)
+        for (Property<?> p : BLACKLISTED_PROPERTIES.keySet())
         {
             if (state.contains(p))
             {
                 @SuppressWarnings("unchecked")
                 Property<T> prop = (Property<T>) p;
-                BlockState def = state.getBlock().getDefaultState();
-                state = state.with(prop, def.get(prop));
+//                BlockState def = state.getBlock().getDefaultState();
+                state = state.with(prop, (T) BLACKLISTED_PROPERTIES.get(p));
                 //System.out.printf("[PHv3] blacklisted state [%s] found, setting default value\n", prop.getName());
             }
         }
@@ -190,16 +206,21 @@ public class PlacementHandler
             state = state.with(Properties.WATERLOGGED, true);
         }
 
-        if (state.canPlaceAt(context.getWorld(), context.getPos()))
+        if (ServuxConfigProvider.INSTANCE.isEasyPlaceValidatorEnabled())
         {
-            //System.out.printf("validator passed for \"%s\"\n", state);
-            return state;
+            if (state.canPlaceAt(context.getWorld(), context.getPos()))
+            {
+                //System.out.printf("validator passed for \"%s\"\n", state);
+                return state;
+            }
+            else
+            {
+                //System.out.printf("validator failed for \"%s\"\n", state);
+                return null;
+            }
         }
-        else
-        {
-            //System.out.printf("validator failed for \"%s\"\n", state);
-            return null;
-        }
+
+        return state;
     }
 
     private static BlockState applyDirectionProperty(BlockState state, UseContext context,
