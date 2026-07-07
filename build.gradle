@@ -30,7 +30,8 @@ dependencies {
 	neoForge "net.neoforged:neoforge:${project.neoforge_version}"
 	implementation "com.google.code.findbugs:jsr305:3.0.2"
 
-	include(api("team.cagayakegirls.foxified:foxified-networking-api:${project.networking_api_version}"))
+	include(api(forgifiedFabricApi.module("fabric-api-base", project.fabric_api_version, true)))
+	include(api(forgifiedFabricApi.module("fabric-networking-api-v1", project.fabric_api_version, true)))
 	runtimeOnly("team.cagayakegirls.foxified:foxified-classtweaker:${project.foxified_classtweaker_version}")
 
 //	runtimeOnly 'me.fallenbreath:mixin-auditor:0.2.0-u'
