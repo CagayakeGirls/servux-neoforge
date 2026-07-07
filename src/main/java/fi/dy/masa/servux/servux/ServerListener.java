@@ -7,7 +7,6 @@ import fi.dy.masa.servux.dataproviders.DataProviderManager;
 import fi.dy.masa.servux.dataproviders.HudDataProvider;
 import fi.dy.masa.servux.dataproviders.ServuxConfigProvider;
 import fi.dy.masa.servux.interfaces.IServerListener;
-import fi.dy.masa.servux.util.i18nLang;
 
 public class ServerListener implements IServerListener
 {
@@ -40,13 +39,15 @@ public class ServerListener implements IServerListener
     {
         DataProviderManager.INSTANCE.writeToConfig();
         DataProviderManager.INSTANCE.onCaptureImmutable(server.getRegistryManager());
-        i18nLang.tryLoadLanguage(ServuxConfigProvider.INSTANCE.getDefaultLanguage());
+//        i18nLang.tryLoadLanguage(ServuxConfigProvider.INSTANCE.getDefaultLanguage());
+        ServuxConfigProvider.INSTANCE.registerHandler();
     }
 
     @Override
     public void onServerStopping(MinecraftServer server)
     {
         DataProviderManager.INSTANCE.onServerTickEndPre();
+        DataProviderManager.INSTANCE.writeToConfig();
     }
 
     @Override

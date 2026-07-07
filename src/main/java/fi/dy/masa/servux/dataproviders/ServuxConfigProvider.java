@@ -16,23 +16,25 @@ import fi.dy.masa.servux.settings.ServuxBoolSetting;
 import fi.dy.masa.servux.settings.ServuxIntSetting;
 import fi.dy.masa.servux.settings.ServuxStringSetting;
 import fi.dy.masa.servux.util.StringUtils;
-import fi.dy.masa.servux.util.i18nLang;
+import fi.dy.masa.servux.util.i18n.i18nManager;
 
 public class ServuxConfigProvider extends DataProviderBase
 {
     public static final ServuxConfigProvider INSTANCE = new ServuxConfigProvider();
+    public static final i18nManager LANG = i18nManager.create(Reference.MOD_ID);
 
     private final ServuxIntSetting basePermissionLevel = new ServuxIntSetting(this, "permission_level", 0, 4, 0);
     private final ServuxIntSetting adminPermissionLevel = new ServuxIntSetting(this, "permission_level_admin", 3, 4, 0);
     private final ServuxIntSetting easyPlacePermissionLevel = new ServuxIntSetting(this, "permission_level_easy_place", 0, 4, 0);
+    private final ServuxBoolSetting easyPlaceValidatorEnabled = new ServuxBoolSetting(this, "easy_place_validator_enabled", true);
     private final ServuxStringSetting defaultLanguage = new ServuxStringSetting(this, "default_language",
-        i18nLang.DEFAULT_LANG,
-        List.of("en_us", "zh_cn"), false)
+                                                                                i18nManager.DEFAULT_LANG,
+                                                                                List.of(i18nManager.DEFAULT_LANG), false)
     {
         @Override
         public void setValueNoCallback(String value)
         {
-            i18nLang.tryLoadLanguage(value.toLowerCase());
+            LANG.setLang(value);
             super.setValueNoCallback(value.toLowerCase());
         }
 
@@ -40,8 +42,9 @@ public class ServuxConfigProvider extends DataProviderBase
         public void setValue(String value) throws CommandSyntaxException
         {
             String lowerCase = value.toLowerCase();
-            if (i18nLang.tryLoadLanguage(lowerCase))
+            if (LANG.getLanguageKeys().contains(lowerCase))
             {
+                LANG.setLang(lowerCase);
                 var oldValue = this.getValue();
                 super.setValueNoCallback(lowerCase);
                 this.onValueChanged(oldValue, value);
@@ -58,7 +61,7 @@ public class ServuxConfigProvider extends DataProviderBase
     protected ServuxConfigProvider()
     {
         super("servux_main",
-                Identifier.of("servux:main"),
+                Identifier.of("servux", "main"),
                 1, 0, Reference.MOD_ID+".main",
                 "The Servux Main configuration data provider");
     }
@@ -72,7 +75,10 @@ public class ServuxConfigProvider extends DataProviderBase
     @Override
     public void registerHandler()
     {
-        // NO-OP
+        if (LANG != null)
+        {
+            this.defaultLanguage.updateExamples(LANG.getLanguageKeys());
+        }
     }
 
     @Override
@@ -112,7 +118,7 @@ public class ServuxConfigProvider extends DataProviderBase
             return false;
         }
 
-        return Permissions.check(player, Reference.MOD_ID+".main.admin", adminPermissionLevel.getValue());
+        return Permissions.check(player, Reference.MOD_ID+".main.admin", this.adminPermissionLevel.getValue());
     }
 
     public boolean hasPermission_EasyPlace(ServerPlayerEntity player)
@@ -122,7 +128,17 @@ public class ServuxConfigProvider extends DataProviderBase
             return false;
         }
 
-        return Permissions.check(player, Reference.MOD_ID+".main.easy_place", easyPlacePermissionLevel.getValue());
+        return Permissions.check(player, Reference.MOD_ID+".main.easy_place", this.easyPlacePermissionLevel.getValue());
+    }
+
+    public boolean isEasyPlaceValidatorEnabled()
+    {
+        return this.easyPlaceValidatorEnabled.getValue();
+    }
+
+    public String getDefaultLanguage()
+    {
+        return defaultLanguage.getValue();
     }
 
     @Override
@@ -135,10 +151,5 @@ public class ServuxConfigProvider extends DataProviderBase
     public void onTickEndPost()
     {
         // NO-OP
-    }
-
-    public String getDefaultLanguage()
-    {
-        return defaultLanguage.getValue();
     }
 }
