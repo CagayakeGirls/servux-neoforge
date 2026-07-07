@@ -12,8 +12,24 @@ public enum Schema
 {
     // TODO --> Add Schema Versions to this as versions get released
     // Minecraft Data Versions
-	SCHEMA_FUTURE  (9999, "FUTURE"),
-    SCHEMA_1_21_09 (4553, "1.21.9-rc1"),
+    SCHEMA_FUTURE       (9999, "FUTURE"),
+    SCHEMA_26W14A       (5000, "26w14a"),        // Herd craft April Fools update (Why is this Data Version 5000?)
+    SCHEMA_26_3_SS2     (4999, "26.3-snapshot-2"),
+    SCHEMA_26_2         (4903, "26.2"),
+    SCHEMA_26_2_PR4     (4897, "26.2-pre-4"),
+    SCHEMA_26_2_SS7     (4891, "26.2-snapshot-7"),
+    SCHEMA_26_2_SS4     (4887, "26.2-snapshot-4"),
+    SCHEMA_26_2_SS1     (4883, "26.2-snapshot-1"),
+    SCHEMA_26_1_2       (4790, "26.1.2"),
+    SCHEMA_26_1_1       (4788, "26.1.1"),
+    SCHEMA_26_1         (4786, "26.1"),
+    SCHEMA_26_1_SS6     (4774, "26.1-snapshot-6"),
+    SCHEMA_26_1_SS1     (4764, "26.1-snapshot-1"),
+	SCHEMA_1_21_11 (4671, "1.21.11"),
+	SCHEMA_25W46A  (4662, "25w46a"),
+	SCHEMA_25W41A  (4657, "25w41a"),
+	SCHEMA_1_21_10 (4556, "1.21.10"),
+	SCHEMA_1_21_09 (4554, "1.21.9"),
     SCHEMA_25W36B  (4546, "25w36b"),
 	SCHEMA_25W31A  (4534, "25w31a"),
     SCHEMA_1_21_08 (4440, "1.21.8"),
