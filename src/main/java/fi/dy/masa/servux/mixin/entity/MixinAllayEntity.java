@@ -1,8 +1,13 @@
 package fi.dy.masa.servux.mixin.entity;
 
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ai.brain.Brain;
 import net.minecraft.entity.passive.AllayEntity;
 import net.minecraft.world.GameRules;
+import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -15,17 +20,18 @@ public abstract class MixinAllayEntity
 {
 //	@Shadow public abstract Brain<AllayEntity> getBrain();
 
-	@Redirect(method = "canGather",
+	@WrapOperation(method = "canGather",
 	          at = @At(value = "INVOKE",
-	                   target = "Lnet/minecraft/world/GameRules;getBoolean(Lnet/minecraft/world/GameRules$Key;)Z"))
-	private boolean servux$fixAllayGathering1(GameRules instance, GameRules.Key<GameRules.BooleanRule> rule)
+	                   target = "Lnet/neoforged/neoforge/event/EventHooks;canEntityGrief(Lnet/minecraft/world/World;Lnet/minecraft/entity/Entity;)Z"))
+	private boolean servux$fixAllayGathering1(World level, Entity entity, Operation<Boolean> original)
 	{
-		if (EntitiesDataProvider.INSTANCE.hasFixAllayGathering())
+		if (EntitiesDataProvider.INSTANCE.hasFixAllayGathering() &&
+			entity != null && entity.getType() == EntityType.ALLAY)
 		{
 			return true;
 		}
 
-		return instance.getBoolean(rule);
+		return original.call(level, entity);
 	}
 
 //	@Inject(method = "isItemPickupCoolingDown",
