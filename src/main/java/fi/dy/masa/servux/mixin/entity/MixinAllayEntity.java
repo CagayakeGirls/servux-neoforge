@@ -25,8 +25,7 @@ public abstract class MixinAllayEntity
 	                   target = "Lnet/neoforged/neoforge/event/EventHooks;canEntityGrief(Lnet/minecraft/world/World;Lnet/minecraft/entity/Entity;)Z"))
 	private boolean servux$fixAllayGathering1(World level, Entity entity, Operation<Boolean> original)
 	{
-		if (EntitiesDataProvider.INSTANCE.hasFixAllayGathering() &&
-			entity != null && entity.getType() == EntityType.ALLAY)
+		if (EntitiesDataProvider.INSTANCE.hasFixAllayGathering())
 		{
 			return true;
 		}
