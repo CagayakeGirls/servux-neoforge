@@ -1,19 +1,61 @@
-[![](https://jitpack.io/v/sakura-ryoko/servux.svg)](https://jitpack.io/#sakura-ryoko/servux)
+<center><div align="center">
 
-Servux
-==============
-Servux is a server-side mod that provides extra support/features for some client-side mods when playing on a server.
+<img height="100" src="src/main/resources/icon.png" width="100"/>
 
-**Servux itself is never needed on the clients or in single player**,
-it's only needed/useful on the dedicated server side in multiplayer.
+# ServuxForged for NeoForge
 
-In version 0.1.x it only has one thing, which is sending structure bounding boxes for MiniHUD so that it can render those also in multiplayer.
+Servux unofficial NeoForge port.
 
-For compiled builds (= downloads), see https://www.curseforge.com/minecraft/mc-mods/servux
+<img alt="neoforge" height="56" src="https://raw.githubusercontent.com/KessokuTeaTime/badges-extra/main/assets/cozy/supported/neoforge_vector.svg">
 
-Compiling
-=========
-* Clone the repository
-* Open a command prompt/terminal to the repository directory
-* run 'gradlew build'
-* The built jar file will be in build/libs/
+<a href="https://modrinth.com/mod/servuxforged">
+<img alt="modrinth" height="56" src="https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/cozy/available/modrinth_vector.svg">
+</a>
+<a href="https://www.curseforge.com/minecraft/mc-mods/servuxforged">
+<img alt="curseforge" height="56" src="https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/cozy/available/curseforge_vector.svg">
+</a>
+
+</div></center>
+
+ServuxForged is a library mod used by Masa's mods NeoForge port. It contains some common code previously
+duplicated in most of the mods, such as multi-key capable keybinds, configuration GUIs etc.
+
+[Original Repo Readme](Original-README.md)
+
+## Development
+
+This mod use modrinth maven.
+
+```gradle
+repositories {
+    maven { url 'https://api.modrinth.com/maven' }
+}
+
+dependencies {
+    modImplementation "maven.modrinth:servuxforged:${servuxforged_version}"
+}
+```
+
+or use KessokuTeaTime maven
+
+```gradle
+repositories {
+    maven { url 'https://maven.kessokuteatime.work/releases' }
+}
+
+dependencies {
+    modImplementation "team.cagayakegirls.servuxforged:servuxforged:${servuxforged_version}"
+}
+```
+
+> Note: "${servuxforged_version}" can be found in [Modrinth](https://modrinth.com/mod/servuxforged)
+
+## Compiling
+- Clone the repository
+- Open a command prompt/terminal to the repository directory
+- run 'gradlew build'
+- The built jar file will be in build/libs/
+
+## Credits
+- [maruohon/servux](https://github.com/maruohon/servux)
+- [sakura-ryoko/servux](https://github.com/sakura-ryoko/servux)
