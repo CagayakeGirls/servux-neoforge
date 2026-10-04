@@ -5,20 +5,19 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.Identifier;
 
-import net.fabricmc.loader.api.FabricLoader;
-import net.fabricmc.loader.api.ModContainer;
-
 import fi.dy.masa.servux.dataproviders.ServuxConfigProvider;
+import net.neoforged.neoforgespi.language.IModInfo;
+import team.cagayakegirls.servux.utils.ModPlatform;
 
 public class StringUtils
 {
     public static String getModVersionString(String modId)
     {
-        for (ModContainer container : FabricLoader.getInstance().getAllMods())
+        for (IModInfo modInfo : ModPlatform.getAllMods())
         {
-            if (container.getMetadata().getId().equals(modId))
+            if (modInfo.getModId().equals(modId))
             {
-                return container.getMetadata().getVersion().getFriendlyString();
+                return modInfo.getVersion().toString();
             }
         }
 

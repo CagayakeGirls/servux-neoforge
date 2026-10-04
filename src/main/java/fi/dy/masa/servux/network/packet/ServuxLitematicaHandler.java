@@ -14,9 +14,9 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.Util;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+//import net.fabricmc.api.EnvType;
+//import net.fabricmc.api.Environment;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 import fi.dy.masa.servux.Reference;
 import fi.dy.masa.servux.Servux;
@@ -29,13 +29,13 @@ import fi.dy.masa.servux.util.data.tag.BaseData;
 import fi.dy.masa.servux.util.data.tag.CompoundData;
 import fi.dy.masa.servux.util.data.tag.util.DataByteBufUtils;
 
-@Environment(EnvType.SERVER)
+//@Environment(EnvType.SERVER)
 public abstract class ServuxLitematicaHandler<T extends CustomPacketPayload> implements IPluginServerPlayHandler<T>
 {
 	private static final ServuxLitematicaHandler<ServuxLitematicaPacket.Payload> INSTANCE = new ServuxLitematicaHandler<>()
 	{
 		@Override
-		public void receive(ServuxLitematicaPacket.@NonNull Payload payload, ServerPlayNetworking.@NotNull Context context)
+		public void handle(ServuxLitematicaPacket.@NonNull Payload payload, @NonNull IPayloadContext context)
 		{
 			ServuxLitematicaHandler.INSTANCE.receivePlayPayload(payload, context);
 		}
@@ -219,11 +219,10 @@ public abstract class ServuxLitematicaHandler<T extends CustomPacketPayload> imp
 	}
 
 	@Override
-	public void receivePlayPayload(T payload, ServerPlayNetworking.Context ctx)
+	public void receivePlayPayload(T payload, IPayloadContext ctx)
 	{
-		if (payload.type().id().equals(CHANNEL_ID))
+		if (payload.type().id().equals(CHANNEL_ID) && ctx.player() instanceof ServerPlayer player)
 		{
-			ServerPlayer player = ctx.player();
 			ServuxLitematicaHandler.INSTANCE.decodeServerData(CHANNEL_ID, player, ((ServuxLitematicaPacket.Payload) payload).data());
 		}
 	}

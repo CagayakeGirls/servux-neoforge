@@ -1,6 +1,5 @@
 package fi.dy.masa.servux;
 
-import net.fabricmc.api.ModInitializer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import fi.dy.masa.servux.commands.CommandProvider;
@@ -10,12 +9,11 @@ import fi.dy.masa.servux.event.ServerInitHandler;
 import fi.dy.masa.servux.servux.ServuxInitHandler;
 import fi.dy.masa.servux.util.log.AnsiLogger;
 
-public class Servux implements ModInitializer
+public class Servux
 {
     public static final Logger LOGGER = LogManager.getLogger(Reference.MOD_ID);
     private static final AnsiLogger ANSI_LOGGER = new AnsiLogger(Servux.class);
 
-    @Override
     public void onInitialize()
     {
         if (Reference.DEBUG_MODE) { ANSI_LOGGER.debug("DEBUG_MODE: Active"); }

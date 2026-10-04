@@ -80,11 +80,12 @@ public class EntitiesDataProvider extends DataProviderBase
     {
         ServerPlayHandler.getInstance().registerServerPlayHandler(HANDLER);
 
-        if (!this.isRegistered())
+        if (!HANDLER.isPlayRegistered(this.getNetworkChannel()))
         {
             HANDLER.registerPlayPayload(ServuxEntitiesPacket.Payload.ID, ServuxEntitiesPacket.Payload.CODEC, IPluginServerPlayHandler.BOTH_SERVER);
-            this.setRegistered(true);
         }
+
+        this.setRegistered(HANDLER.isPlayRegistered(this.getNetworkChannel()));
 
         HANDLER.registerPlayReceiver(ServuxEntitiesPacket.Payload.ID, HANDLER::receivePlayPayload);
     }

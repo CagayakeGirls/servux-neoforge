@@ -12,9 +12,9 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+//import net.fabricmc.api.EnvType;
+//import net.fabricmc.api.Environment;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 import fi.dy.masa.servux.Reference;
 import fi.dy.masa.servux.Servux;
@@ -24,13 +24,13 @@ import fi.dy.masa.servux.network.IServerPayloadData;
 import fi.dy.masa.servux.network.PacketSplitter;
 import fi.dy.masa.servux.util.data.tag.util.DataByteBufUtils;
 
-@Environment(EnvType.SERVER)
+//@Environment(EnvType.SERVER)
 public abstract class ServuxHudHandler<T extends CustomPacketPayload> implements IPluginServerPlayHandler<T>
 {
 	private static final ServuxHudHandler<ServuxHudPacket.Payload> INSTANCE = new ServuxHudHandler<>()
 	{
 		@Override
-		public void receive(ServuxHudPacket.@NonNull Payload payload, ServerPlayNetworking.@NotNull Context context)
+		public void handle(ServuxHudPacket.@NonNull Payload payload, @NotNull IPayloadContext context)
 		{
 			ServuxHudHandler.INSTANCE.receivePlayPayload(payload, context);
 		}
@@ -125,11 +125,10 @@ public abstract class ServuxHudHandler<T extends CustomPacketPayload> implements
 	}
 
 	@Override
-	public void receivePlayPayload(T payload, ServerPlayNetworking.Context ctx)
+	public void receivePlayPayload(T payload, IPayloadContext ctx)
 	{
-		if (payload.type().id().equals(CHANNEL_ID))
+		if (payload.type().id().equals(CHANNEL_ID) && ctx.player() instanceof ServerPlayer player)
 		{
-			ServerPlayer player = ctx.player();
 			ServuxHudHandler.INSTANCE.decodeServerData(CHANNEL_ID, player, ((ServuxHudPacket.Payload) payload).data());
 		}
 	}

@@ -116,11 +116,12 @@ public class LitematicsDataProvider extends DataProviderBase
 	{
 		ServerPlayHandler.getInstance().registerServerPlayHandler(HANDLER);
 
-		if (!this.isRegistered())
+		if (!HANDLER.isPlayRegistered(this.getNetworkChannel()))
 		{
 			HANDLER.registerPlayPayload(ServuxLitematicaPacket.Payload.ID, ServuxLitematicaPacket.Payload.CODEC, IPluginServerPlayHandler.BOTH_SERVER);
-			this.setRegistered(true);
 		}
+
+		this.setRegistered(HANDLER.isPlayRegistered(this.getNetworkChannel()));
 
 		HANDLER.registerPlayReceiver(ServuxLitematicaPacket.Payload.ID, HANDLER::receivePlayPayload);
 	}

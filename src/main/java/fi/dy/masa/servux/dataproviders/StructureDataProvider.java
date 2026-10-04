@@ -91,11 +91,12 @@ public class StructureDataProvider extends DataProviderBase
 	{
 		ServerPlayHandler.getInstance().registerServerPlayHandler(HANDLER);
 
-		if (!this.isRegistered())
+		if (!HANDLER.isPlayRegistered(this.getNetworkChannel()))
 		{
 			HANDLER.registerPlayPayload(ServuxStructuresPacket.Payload.ID, ServuxStructuresPacket.Payload.CODEC, IPluginServerPlayHandler.BOTH_SERVER);
-			this.setRegistered(true);
 		}
+
+		this.setRegistered(HANDLER.isPlayRegistered(this.getNetworkChannel()));
 
 		HANDLER.registerPlayReceiver(ServuxStructuresPacket.Payload.ID, HANDLER::receivePlayPayload);
 	}

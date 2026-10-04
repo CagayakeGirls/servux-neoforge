@@ -133,11 +133,12 @@ public class HudDataProvider extends DataProviderBase
 	{
 		ServerPlayHandler.getInstance().registerServerPlayHandler(HANDLER);
 
-		if (!this.isRegistered())
+		if (!HANDLER.isPlayRegistered(this.getNetworkChannel()))
 		{
 			HANDLER.registerPlayPayload(ServuxHudPacket.Payload.ID, ServuxHudPacket.Payload.CODEC, IPluginServerPlayHandler.BOTH_SERVER);
-			this.setRegistered(true);
 		}
+
+		this.setRegistered(HANDLER.isPlayRegistered(this.getNetworkChannel()));
 
 		HANDLER.registerPlayReceiver(ServuxHudPacket.Payload.ID, HANDLER::receivePlayPayload);
 	}

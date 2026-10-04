@@ -8,6 +8,7 @@ import net.minecraft.server.permissions.Permission;
 import net.minecraft.server.permissions.PermissionLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
+import team.cagayakegirls.servux.permissions.PermissionsHelper;
 
 public class PermissionsUtil
 {
@@ -18,19 +19,14 @@ public class PermissionsUtil
 		PermissionLevel pl = PermissionLevel.byId(Mth.clamp(level, 0, PermissionLevel.OWNERS.id()));
 		Identifier id = Identifier.parse(sanitizeNode(node));
 
-		if (ctx.isPlayer() && ctx.getPlayer() != null)
-		{
-			return ctx.getPlayer().checkPermission(id, pl);
-		}
-
-		return ctx.permissions().hasPermission(new Permission.HasCommandLevel(pl));
+		return PermissionsHelper.check(ctx, id.toString(), pl);
 	}
 
 	public static boolean check(Entity entity, @NotNull String node, int level)
 	{
 		PermissionLevel pl = PermissionLevel.byId(Mth.clamp(level, 0, PermissionLevel.OWNERS.id()));
 		Identifier id = Identifier.parse(sanitizeNode(node));
-		return entity.checkPermission(id, pl);
+		return PermissionsHelper.check(entity, id.toString(), pl);
 	}
 
 	public static String sanitizeNode(@NotNull final String node)
